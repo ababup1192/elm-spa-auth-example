@@ -1,8 +1,9 @@
 module Shared exposing
     ( Flags
     , Model
-    , Msg
+    , Msg(..)
     , init
+    , randomSignIn
     , subscriptions
     , update
     )
@@ -22,7 +23,9 @@ type alias Model =
 
 
 type Msg
-    = RandomSignIn Bool
+    = SignIn
+    | RandomSignIn Bool
+    | SignOut
 
 
 randomBool : Random.Generator Bool
@@ -30,25 +33,37 @@ randomBool =
     Random.map ((==) 1) (Random.int 0 1)
 
 
+randomSignIn : Cmd Msg
+randomSignIn =
+    Random.generate RandomSignIn randomBool
+
+
 init : Request -> Flags -> ( Model, Cmd Msg )
-init _ _ =
-    ( { user = Nothing }, Random.generate RandomSignIn randomBool )
+init req _ =
+    ( { user = Nothing }
+    , if req.route == Gen.Route.Home_ then
+        randomSignIn
+
+      else
+        Cmd.none
+    )
 
 
 update : Request -> Msg -> Model -> ( Model, Cmd Msg )
 update req msg model =
     case msg of
-        RandomSignIn isSucceeded ->
-            ( { model
-                | user =
-                    if isSucceeded then
-                        Just ()
+        SignIn ->
+            ( model, randomSignIn )
 
-                    else
-                        Nothing
-              }
-            , Request.pushRoute Gen.Route.Home_ req
-            )
+        RandomSignIn isSucceeded ->
+            if isSucceeded then
+                ( { model | user = Just () }, Request.replaceRoute Gen.Route.Home_ req )
+
+            else
+                ( { model | user = Nothing }, Request.replaceRoute Gen.Route.NotFound req )
+
+        SignOut ->
+            ( { model | user = Nothing }, Request.replaceRoute Gen.Route.NotFound req )
 
 
 subscriptions : Request -> Model -> Sub Msg

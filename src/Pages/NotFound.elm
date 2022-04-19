@@ -1,7 +1,7 @@
-module Pages.Home_ exposing (Model, Msg, page)
+module Pages.NotFound exposing (Model, Msg, page)
 
 import Effect exposing (Effect)
-import Gen.Params.Home_ exposing (Params)
+import Gen.Params.NotFound exposing (Params)
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Page
@@ -12,13 +12,12 @@ import View exposing (View)
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
 page _ _ =
-    Page.protected.advanced <|
-        \user ->
-            { init = init
-            , update = update
-            , view = view
-            , subscriptions = subscriptions
-            }
+    Page.advanced
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        }
 
 
 
@@ -39,14 +38,14 @@ init =
 
 
 type Msg
-    = SignOut
+    = SignIn
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        SignOut ->
-            ( model, Effect.fromShared Shared.SignOut )
+        SignIn ->
+            ( model, Effect.fromShared Shared.SignIn )
 
 
 
@@ -64,9 +63,9 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    { title = "サインイン"
+    { title = "サインイン失敗"
     , body =
-        [ p [] [ text "サインイン中" ]
-        , button [ onClick SignOut ] [ text "サインアウト" ]
+        [ p [] [ text "サインイン失敗" ]
+        , button [ onClick SignIn ] [ text "サインイン再チャレンジ" ]
         ]
     }
